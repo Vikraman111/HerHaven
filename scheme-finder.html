@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Women's Scheme Eligibility Finder</title>
+    <style>
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(207, 222, 243, 0.5);
+      }
+
+      h1 {
+        color: #2d3748;
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5em;
+        font-weight: 700;
+        background: linear-gradient(120deg, #4a90e2, #5ca4ea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 1.1em;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0eafc;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+      }
+
+      button {
+        width: 100%;
+        background: linear-gradient(to right, #4a90e2, #5ca4ea);
+        color: white;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 600;
+        transition: transform 0.2s ease;
+        box-shadow: 0 4px 6px rgba(74, 144, 226, 0.2);
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(74, 144, 226, 0.3);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .scheme-section {
+        margin-top: 40px;
+      }
+
+      .scheme-section h2 {
+        color: #2d3748;
+        border-bottom: 3px solid #4a90e2;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.8em;
+      }
+
+      .scheme {
+        background-color: white;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 12px;
+        border-left: 5px solid #4a90e2;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7); /* Mild box shadow */
+        transition: all 0.3s ease;
+      }
+      .scheme:hover {
+        transform: translateX(5px);
+        background-color: #f8faff;
+      }
+
+      .scheme h3 {
+        margin: 0 0 12px 0;
+        color: #2d3748;
+        font-size: 1.3em;
+      }
+
+      .scheme p {
+        margin: 0;
+        color: #4a5568;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 20px 10px;
+        }
+
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 2em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Women's Scheme Eligibility Finder</h1>
+
+      <div class="form-group">
+        <label for="age">Age:</label>
+        <input
+          type="number"
+          id="age"
+          min="0"
+          max="120"
+          required
+          placeholder="Enter your age"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="income">Annual Income (in ₹):</label>
+        <input
+          type="number"
+          id="income"
+          min="0"
+          required
+          placeholder="Enter your annual income"
+        />
+      </div>
+
+      <button onclick="findEligibleSchemes()">Find Eligible Schemes</button>
+
+      <div id="results"></div>
+    </div>
+
+    <script>
+      const schemes = {
+        age: [
+          {
+            name: "Rajiv Gandhi Scheme for Empowerment of Adolescent Girls (SABLA)",
+            description: "Focuses on nutrition, health, and skill development.",
+            minAge: 11,
+            maxAge: 18,
+          },
+          {
+            name: "National Scheme of Incentives to Girls for Secondary Education (NSIGSE)",
+            description:
+              "Promotes education for girls who belong to SC/ST communities.",
+            minAge: 14,
+            maxAge: 18,
+          },
+          {
+            name: "Sukanya Samriddhi Yojana",
+            description:
+              "Savings scheme for the girl child's future education and marriage.",
+            minAge: 0,
+            maxAge: 10,
+          },
+          {
+            name: "Pradhan Mantri Matru Vandana Yojana (PMMVY)",
+            description:
+              "Provides partial wage compensation for maternity benefits.",
+            minAge: 19,
+            maxAge: 50,
+          },
+          {
+            name: "Kishori Shakti Yojana",
+            description: "Focuses on holistic development of adolescent girls.",
+            minAge: 11,
+            maxAge: 18,
+          },
+        ],
+        income: [
+          {
+            name: "Pradhan Mantri Jan Dhan Yojana (PMJDY)",
+            description:
+              "Offers zero-balance savings accounts with insurance and pension benefits.",
+            maxIncome: 250000,
+          },
+          {
+            name: "Mahila Shakti Kendra",
+            description: "Supports women's empowerment in rural areas.",
+            maxIncome: 300000,
+          },
+          {
+            name: "National Rural Livelihoods Mission (NRLM)",
+            description:
+              "Promotes self-employment and organizing women into Self-Help Groups.",
+            maxIncome: 250000,
+          },
+          {
+            name: "Support to Training and Employment Program for Women (STEP)",
+            description:
+              "Provides skills training and employment opportunities.",
+            maxIncome: 300000,
+          },
+          {
+            name: "Working Women Hostel Scheme",
+            description:
+              "Provides affordable housing for working women in urban areas.",
+            maxIncome: 500000,
+          },
+        ],
+        noCriteria: [
+          {
+            name: "One Stop Centre Scheme (OSC)",
+            description:
+              "Supports women in distress with legal, medical, and counseling services.",
+          },
+          {
+            name: "Mahila E-Haat",
+            description: "Online marketing platform for women entrepreneurs.",
+          },
+          {
+            name: "Women Helpline Scheme (181)",
+            description:
+              "24-hour emergency helpline for women facing violence or harassment.",
+          },
+          {
+            name: "She-Box",
+            description:
+              "Online complaint management system for workplace sexual harassment.",
+          },
+          {
+            name: "Digital Saksharta Abhiyan (DISHA)",
+            description: "Provides digital literacy training for women.",
+          },
+          {
+            name: "Stand-Up India Scheme",
+            description: "Provides bank loans for setting up new enterprises.",
+          },
+        ],
+      };
+
+      function findEligibleSchemes() {
+        const age = parseInt(document.getElementById("age").value);
+        const income = parseInt(document.getElementById("income").value);
+
+        if (isNaN(age) || isNaN(income)) {
+          alert("Please enter valid age and income");
+          return;
+        }
+
+        let html = "";
+
+        // Age-based schemes
+        const eligibleAgeSchemes = schemes.age.filter(
+          (scheme) => age >= scheme.minAge && age <= scheme.maxAge
+        );
+
+        // Income-based schemes
+        const eligibleIncomeSchemes = schemes.income.filter(
+          (scheme) => income <= scheme.maxIncome
+        );
+
+        if (eligibleAgeSchemes.length > 0 || eligibleIncomeSchemes.length > 0) {
+          html += '<div class="scheme-section"><h2>Eligible Schemes</h2>';
+
+          eligibleAgeSchemes.forEach((scheme) => {
+            html += createSchemeHTML(scheme);
+          });
+
+          eligibleIncomeSchemes.forEach((scheme) => {
+            html += createSchemeHTML(scheme);
+          });
+
+          html += "</div>";
+        }
+
+        // Always show schemes with no criteria
+        html +=
+          '<div class="scheme-section"><h2>Universal Schemes (No Eligibility Criteria)</h2>';
+        schemes.noCriteria.forEach((scheme) => {
+          html += createSchemeHTML(scheme);
+        });
+        html += "</div>";
+
+        document.getElementById("results").innerHTML = html;
+      }
+
+      function createSchemeHTML(scheme) {
+        return `
+          <div class="scheme">
+            <h3>${scheme.name}</h3>
+            <p>${scheme.description}</p>
+          </div>
+        `;
+      }
+    </script>
+  </body>
+</html>

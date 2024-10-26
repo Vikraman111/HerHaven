@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice Command to Call Police</title>
+    <link rel="stylesheet" href="voice.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Voice Command Detection</h1>
+      <p id="description">
+        Click the microphone icon and say "police" to automatically make a call
+      </p>
+      <div id="mic-container">
+        <svg
+          id="mic-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M12 15c1.104 0 2 .896 2 2v1h-4v-1c0-1.104.896-2 2-2zm2-2c0 2.209-1.791 4-4 4s-4-1.791-4-4v-2c0-2.209 1.791-4 4-4s4 1.791 4 4v2zm1.767-11.083c-.571-1.281-1.876-2.083-3.267-2.083-1.39 0-2.696.802-3.267 2.083-.329.745-.5 1.566-.5 2.416v6c0 .85.171 1.671.5 2.416.571 1.281 1.876 2.083 3.267 2.083 1.39 0 2.696-.802 3.267-2.083.329-.745.5-1.566.5-2.416v-6c0-.85-.171-1.671-.5-2.416zm-3.767 12.083c-.551 0-1-.448-1-1v-1h2v1c0 .552-.448 1-1 1zm9.233-4.083h-2v4c0 2.209-1.791 4-4 4h-4c-2.209 0-4-1.791-4-4v-4h-2v4c0 3.313 2.687 6 6 6h4c3.313 0 6-2.687 6-6v-4z"
+          />
+        </svg>
+        <div id="repel-animation"></div>
+      </div>
+      <button id="start-button">Start Listening</button>
+      <p id="status">Status: Not Listening</p>
+    </div>
+
+    <script src="voice.js"></script>
+  </body>
+</html>

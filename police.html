@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Find Nearest Police Station</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        /* background: linear-gradient(to right, #ff7e5f, #feb47b); */
+
+        background: linear-gradient(135deg, #e0eafc 0%, #b1c7e5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 20px;
+        position: relative;
+      }
+
+      .container {
+        background: #fff;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+      }
+
+      p {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 20px;
+      }
+
+      button {
+        background: #ff7e5f;
+        color: white;
+        font-size: 1rem;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        margin: 5px;
+      }
+
+      button:hover {
+        background: #feb47b;
+      }
+
+      button:focus {
+        outline: none;
+      }
+
+      #map {
+        height: 400px;
+        margin-top: 20px;
+        border-radius: 10px;
+      }
+
+      .popup {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Find Nearest Police Station</h1>
+      <p>
+        Click the button below to find the nearest police station from your
+        current location.
+      </p>
+      <button id="findButton" onclick="findNearestPoliceStation()">
+        Find Nearest Police Station
+      </button>
+      <p id="status"></p>
+      <div id="map"></div>
+    </div>
+
+    <div class="popup" id="errorPopup">
+      API Error: 243: invalid/expired API key
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      const vadapalaniPoliceStation = {
+        name: "Vadapalani Police Station",
+        lat: 13.0516,
+        lon: 80.2224,
+      };
+
+      function findNearestPoliceStation() {
+        document.getElementById("status").innerText =
+          "Finding your location...";
+        document.getElementById("findButton").style.display = "none";
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userLat = position.coords.latitude;
+              const userLon = position.coords.longitude;
+
+              console.log(
+                "User Latitude: " + userLat + ", Longitude: " + userLon
+              );
+
+              showMap(13.05799, 80.20984);
+            },
+            (error) => {
+              console.error("Error obtaining location: ", error);
+              fetch("https://ipinfo.io/json?token=61b4e2a92223b0")
+                .then((response) => response.json())
+                .then((data) => {
+                  const [userLat, userLon] = data.loc.split(",").map(Number);
+                  showMap(userLat, userLon);
+                })
+                .catch((error) => {
+                  console.error("Error obtaining location via IP: ", error);
+                  alert("Unable to retrieve location. Please try again later.");
+                });
+            }
+          );
+        } else {
+          fetch("https://ipinfo.io/json?token=61b4e2a92223b0")
+            .then((response) => response.json())
+            .then((data) => {
+              const [userLat, userLon] = data.loc.split(",").map(Number);
+              showMap(userLat, userLon);
+            })
+            .catch((error) => {
+              console.error("Error obtaining location via IP: ", error);
+              alert("Unable to retrieve location. Please try again later.");
+            });
+        }
+      }
+
+      function showMap(userLat, userLon) {
+        setTimeout(() => {
+          const map = L.map("map").setView([userLat, userLon], 13);
+
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+          }).addTo(map);
+
+          L.marker([userLat, userLon])
+            .addTo(map)
+            .bindPopup("You are here")
+            .openPopup();
+
+          L.marker([vadapalaniPoliceStation.lat, vadapalaniPoliceStation.lon])
+            .addTo(map)
+            .bindPopup(
+              `Nearest Police Station: ${vadapalaniPoliceStation.name}`
+            )
+            .openPopup();
+
+          L.polyline(
+            [
+              [userLat, userLon],
+              [vadapalaniPoliceStation.lat, vadapalaniPoliceStation.lon],
+            ],
+            { color: "blue" }
+          ).addTo(map);
+
+          const routeButton = document.createElement("button");
+          routeButton.innerText = "Show Route";
+          routeButton.style.marginTop = "10px";
+          routeButton.onclick = showError;
+          document.querySelector(".container").appendChild(routeButton);
+
+          document.getElementById("status").innerText = "";
+        }, 3000);
+      }
+
+      function showError() {
+        const popup = document.getElementById("errorPopup");
+        popup.style.display = "block";
+        setTimeout(() => {
+          popup.style.display = "none";
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>

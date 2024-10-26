@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Period Tracker</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        /* background-color: #fff5f5; */
+
+        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #d53f8c;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .input-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #2d3748;
+      }
+
+      input[type="date"],
+      input[type="number"],
+      input[type="tel"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        background-color: #d53f8c;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background-color: #b83280;
+      }
+
+      .calendar {
+        margin-top: 20px;
+        padding: 15px;
+        background: #faf5ff;
+        border-radius: 8px;
+      }
+
+      .notification {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e9d8fd;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .checklist {
+        margin-top: 20px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      .checklist-item {
+        margin-bottom: 10px;
+      }
+
+      .status {
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .storage-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="storageWarning" class="storage-warning"></div>
+      <h1>Period Tracker</h1>
+
+      <div class="input-group">
+        <label for="lastPeriod">Last Period Date:</label>
+        <input type="date" id="lastPeriod" />
+
+        <label for="cycleLength">Average Cycle Length (days):</label>
+        <input type="number" id="cycleLength" value="28" />
+
+        <label for="phone">Phone Number (for SMS alerts):</label>
+        <input type="tel" id="phone" placeholder="Enter phone number" />
+
+        <button onclick="trackPeriod()">Track My Cycle</button>
+      </div>
+
+      <div class="notification" id="notification">
+        <h3>🔔 Upcoming Period Alert</h3>
+        <p id="alertMessage"></p>
+      </div>
+
+      <div class="calendar" id="calendar">
+        <h3>📅 Your Cycle Calendar</h3>
+        <p>Next expected period: <span id="nextPeriod"></span></p>
+        <p>Days until next period: <span id="daysUntil"></span></p>
+      </div>
+
+      <div class="checklist">
+        <h3>📝 Period Essentials Checklist</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="napkins" />
+          <label for="napkins">Sanitary Napkins</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="medicines" />
+          <label for="medicines">Pain Relief Medicines</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="wipes" />
+          <label for="wipes">Wet Wipes</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="extras" />
+          <label for="extras">Extra Underwear</label>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <script>
+      // Storage handler to manage different storage methods
+      const StorageHandler = {
+        storageType: null,
+
+        init() {
+          // Check if localStorage is available
+          try {
+            localStorage.setItem("test", "test");
+            localStorage.removeItem("test");
+            this.storageType = "localStorage";
+          } catch (e) {
+            // Try cookies as fallback
+            try {
+              document.cookie = "test=test";
+              this.storageType = "cookies";
+            } catch (e) {
+              this.storageType = "memory";
+              this.memoryStorage = {};
+            }
+          }
+
+          // Show storage type warning if not using localStorage
+          if (this.storageType !== "localStorage") {
+            document.getElementById("storageWarning").style.display = "block";
+            document.getElementById("storageWarning").textContent = `Using ${
+              this.storageType
+            } storage mode. Your data will ${
+              this.storageType === "memory"
+                ? "be lost when you close the page"
+                : "persist as cookies"
+            }`;
+          }
+        },
+
+        setItem(key, value) {
+          switch (this.storageType) {
+            case "localStorage":
+              localStorage.setItem(key, value);
+              break;
+            case "cookies":
+              document.cookie = `${key}=${value};max-age=31536000;path=/`; // 1 year expiry
+              break;
+            case "memory":
+              this.memoryStorage[key] = value;
+              break;
+          }
+        },
+
+        getItem(key) {
+          switch (this.storageType) {
+            case "localStorage":
+              return localStorage.getItem(key);
+            case "cookies":
+              const match = document.cookie.match(
+                new RegExp(`(^| )${key}=([^;]+)`)
+              );
+              return match ? match[2] : null;
+            case "memory":
+              return this.memoryStorage[key] || null;
+          }
+        },
+      };
+
+      // Initialize storage handler
+      StorageHandler.init();
+
+      function trackPeriod() {
+        const lastPeriod = new Date(
+          document.getElementById("lastPeriod").value
+        );
+        const cycleLength = parseInt(
+          document.getElementById("cycleLength").value
+        );
+        const phone = document.getElementById("phone").value;
+
+        if (!lastPeriod || !cycleLength) {
+          alert("Please fill in all required fields");
+          return;
+        }
+
+        // Calculate next period date
+        const nextPeriodDate = new Date(lastPeriod);
+        nextPeriodDate.setDate(lastPeriod.getDate() + cycleLength);
+
+        // Calculate days until next period
+        const today = new Date();
+        const daysUntil = Math.ceil(
+          (nextPeriodDate - today) / (1000 * 60 * 60 * 24)
+        );
+
+        // Update calendar section
+        document.getElementById("nextPeriod").textContent =
+          nextPeriodDate.toLocaleDateString();
+        document.getElementById("daysUntil").textContent = daysUntil;
+
+        // Show notification if period is approaching
+        const notification = document.getElementById("notification");
+        const alertMessage = document.getElementById("alertMessage");
+
+        if (daysUntil <= 3 && daysUntil >= 0) {
+          notification.style.display = "block";
+          alertMessage.textContent = `Your period is expected to start in ${daysUntil} days! Don't forget to pack your essentials.`;
+
+          if (phone) {
+            sendSMSAlert(phone, daysUntil);
+          }
+        } else {
+          notification.style.display = "none";
+        }
+
+        // Save data using storage handler
+        saveToStorage({
+          lastPeriod: lastPeriod.toISOString(),
+          cycleLength: cycleLength,
+          phone: phone,
+          nextPeriod: nextPeriodDate.toISOString(),
+        });
+
+        updateStatus("Tracking updated successfully!");
+      }
+
+      function sendSMSAlert(phone, daysUntil) {
+        console.log(
+          `SMS Alert to ${phone}: Your period is expected in ${daysUntil} days.`
+        );
+        updateStatus(`SMS alert would be sent to ${phone} (simulation)`);
+      }
+
+      function saveToStorage(data) {
+        StorageHandler.setItem("periodData", JSON.stringify(data));
+      }
+
+      function loadFromStorage() {
+        const data = StorageHandler.getItem("periodData");
+        if (data) {
+          try {
+            const parsedData = JSON.parse(data);
+            document.getElementById("lastPeriod").value = new Date(
+              parsedData.lastPeriod
+            )
+              .toISOString()
+              .split("T")[0];
+            document.getElementById("cycleLength").value =
+              parsedData.cycleLength;
+            document.getElementById("phone").value = parsedData.phone;
+            trackPeriod();
+          } catch (e) {
+            console.error("Error loading saved data:", e);
+            updateStatus("Error loading saved data");
+          }
+        }
+      }
+
+      function updateStatus(message) {
+        const status = document.getElementById("status");
+        status.textContent = message;
+        status.style.backgroundColor = "#9ae6b4";
+        setTimeout(() => {
+          status.textContent = "";
+          status.style.backgroundColor = "transparent";
+        }, 3000);
+      }
+
+      // Load saved data when page loads
+      window.onload = loadFromStorage;
+    </script>
+  </body>
+</html>

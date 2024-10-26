@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Location Sharing</title>
+    <!-- Move Leaflet CSS to head section -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        /* background: linear-gradient(to right, #ff7e5f, #feb47b); */
+
+        background: linear-gradient(135deg, #e0eafc 0%, #b1c7e5 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 20px;
+        position: relative;
+      }
+
+      .container {
+        background: #fff;
+        padding: 30px;
+        max-width: 800px; /* Increased to accommodate map */
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+      }
+
+      p {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 20px;
+      }
+
+      button {
+        background: #ff7e5f;
+        color: white;
+        font-size: 1rem;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        margin: 5px;
+      }
+
+      button:hover {
+        background: #feb47b;
+      }
+
+      button:focus {
+        outline: none;
+      }
+
+      #status {
+        margin-top: 15px;
+        font-size: 1rem;
+        color: #4caf50;
+      }
+
+      .footer {
+        margin-top: 20px;
+        font-size: 0.9rem;
+        color: #999;
+      }
+
+      .popup {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .emergency-contacts {
+        margin-top: 20px;
+        text-align: left;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+      }
+
+      .emergency-contacts h2 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+      }
+
+      .contact-item {
+        margin-bottom: 10px;
+      }
+
+      .contact-item input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      .add-contact {
+        margin-top: 10px;
+      }
+
+      /* Updated map container styling */
+      #map {
+        height: 400px;
+        width: 100%;
+        border-radius: 10px;
+        margin: 20px 0;
+        z-index: 1;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+        }
+
+        p {
+          font-size: 0.9rem;
+        }
+
+        button {
+          font-size: 0.9rem;
+          padding: 10px 15px;
+        }
+
+        #map {
+          height: 300px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Real-Time Location Sharing</h1>
+      <p>
+        In case of an emergency, you can send your live location to your pre-set
+        emergency contacts with just one click. This feature ensures help can
+        reach you as quickly as possible.
+      </p>
+
+      <p>
+        Click the buttons below to share your current location or start live
+        tracking.
+      </p>
+
+      <button onclick="startLiveTracking()">Live Location</button>
+      <button onclick="shareLocationSMS()">Share Location via SMS</button>
+      <button onclick="shareLocationEmail()">Share Location via Email</button>
+      <p id="status"></p>
+
+      <div id="map"></div>
+
+      <div class="emergency-contacts">
+        <h2>Emergency Contacts</h2>
+        <div id="contactsList"></div>
+        <div class="contact-item">
+          <input
+            type="text"
+            id="newContact"
+            placeholder="Add new contact (Email)"
+          />
+          <button class="add-contact" onclick="addContact()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="popup" id="emailPopup">Email sent successfully!</div>
+
+    <!-- Load Leaflet.js before the main script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+    <script>
+      const contacts =
+        JSON.parse(localStorage.getItem("emergencyContacts")) || [];
+      let map;
+      let userMarker;
+
+      // Initialize map with a default view
+      function initMap() {
+        map = L.map("map").setView([0, 0], 2);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap contributors",
+          maxZoom: 19,
+        }).addTo(map);
+        document.getElementById("map").style.display = "block";
+      }
+
+      // Initialize map when the page loads
+      document.addEventListener("DOMContentLoaded", initMap);
+
+      function shareLocationSMS() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              let lat = position.coords.latitude;
+              let long = position.coords.longitude;
+              let emergencyNumber = "8148766397";
+              let message = `I need help! My location is: https://www.google.com/maps?q=${lat},${long}`;
+              window.open(
+                `sms:${emergencyNumber}?&body=${encodeURIComponent(message)}`
+              );
+              document.getElementById("status").innerText =
+                "SMS opened. Please confirm sending.";
+            },
+            () => {
+              alert("Unable to retrieve location.");
+            }
+          );
+        } else {
+          alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      function shareLocationEmail() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              let lat = position.coords.latitude;
+              let long = position.coords.longitude;
+              let subject = "Emergency Location Alert";
+              let emailBody = `I need help! My location is: https://www.google.com/maps?q=${lat},${long}`;
+
+              if (contacts.length > 0) {
+                let mailtoLink = `mailto:${contacts.join(
+                  ","
+                )}?subject=${encodeURIComponent(
+                  subject
+                )}&body=${encodeURIComponent(emailBody)}`;
+                window.open(mailtoLink);
+                showEmailPopup();
+              } else {
+                alert("No emergency contacts found.");
+              }
+            },
+            () => {
+              alert("Unable to retrieve location.");
+            }
+          );
+        } else {
+          alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      function startLiveTracking() {
+        if (navigator.geolocation) {
+          document.getElementById("status").innerText =
+            "Live tracking started...";
+          navigator.geolocation.watchPosition(success, error, {
+            enableHighAccuracy: true,
+            maximumAge: 30000,
+            timeout: 27000,
+          });
+        } else {
+          alert("Geolocation is not supported by this browser.");
+        }
+      }
+
+      function success(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        // Update map view
+        map.setView([lat, lon], 15);
+
+        // Update or create marker
+        if (userMarker) {
+          userMarker.setLatLng([lat, lon]);
+        } else {
+          userMarker = L.marker([lat, lon])
+            .addTo(map)
+            .bindPopup("Your current location")
+            .openPopup();
+        }
+
+        document.getElementById(
+          "status"
+        ).innerText = `Location updated: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+      }
+
+      function error() {
+        alert("Unable to retrieve location.");
+      }
+
+      function addContact() {
+        const newContact = document.getElementById("newContact").value.trim();
+        if (newContact && !contacts.includes(newContact)) {
+          contacts.push(newContact);
+          localStorage.setItem("emergencyContacts", JSON.stringify(contacts));
+          document.getElementById("newContact").value = "";
+          renderContacts();
+        } else {
+          alert("Please enter a valid email or the contact already exists.");
+        }
+      }
+
+      function renderContacts() {
+        const contactsList = document.getElementById("contactsList");
+        contactsList.innerHTML = "";
+        contacts.forEach((contact) => {
+          contactsList.innerHTML += `<div class="contact-item">${contact}</div>`;
+        });
+      }
+
+      function showEmailPopup() {
+        const popup = document.getElementById("emailPopup");
+        popup.style.display = "block";
+        setTimeout(() => {
+          popup.style.display = "none";
+        }, 3000);
+      }
+
+      // Initialize contacts list
+      renderContacts();
+    </script>
+  </body>
+</html>

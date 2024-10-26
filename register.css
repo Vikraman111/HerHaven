@@ -1,0 +1,81 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #ff7e5f, #feb47b, #6a82fb);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.25); /* Semi-transparent white */
+  padding: 30px;
+  max-width: 400px;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  backdrop-filter: blur(10px); /* Glass effect */
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 15px;
+  letter-spacing: 1px;
+}
+
+.input-container {
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: white; /* White background for input fields */
+}
+
+button {
+  background: #0072ff;
+  color: white;
+  font-size: 1rem;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+button:hover {
+  background: #0059b3;
+}
+
+button:focus {
+  outline: none;
+}
+
+p#registerStatus {
+  margin-top: 10px;
+  color: #321ec4;
+  font-weight: bold;
+}
+
+.login-link {
+  margin-top: 20px;
+}
+
+.login-link a {
+  color: #0072ff;
+  text-decoration: none;
+}

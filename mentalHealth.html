@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mental Health Resources</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Arial", sans-serif;
+      }
+
+      body {
+        /* background: linear-gradient(135deg, #ff7e5f, #feb47b, #6a82fb); */
+
+        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: rgba(44, 62, 80, 0.9);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        border-radius: 0 0 15px 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+      }
+
+      .feature-card {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .mood-tracker {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 25px;
+        border-radius: 15px;
+        margin-top: 20px;
+      }
+
+      .meditation-player,
+      .surya-namaskar {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 25px;
+        border-radius: 15px;
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 5px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      button:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .resources {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 25px;
+        border-radius: 15px;
+        margin-top: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .mood-emojis {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+      }
+
+      .mood-emoji {
+        font-size: 2.5rem;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        padding: 10px;
+      }
+
+      .mood-emoji:hover {
+        transform: scale(1.2);
+      }
+
+      #mood-history {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(248, 249, 250, 0.9);
+        border-radius: 10px;
+      }
+
+      .meditation-controls {
+        margin: 20px 0;
+      }
+
+      .timer {
+        font-size: 2.5rem;
+        margin: 20px 0;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .surya-namaskar-container {
+        text-align: center;
+        padding: 20px;
+      }
+
+      .pose-display {
+        margin: 20px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+      }
+
+      .pose-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #2c3e50;
+      }
+
+      .pose-timer {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #3498db;
+      }
+
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid rgba(44, 62, 80, 0.1);
+      }
+
+      a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      a:hover {
+        color: #2980b9;
+      }
+
+      ul {
+        list-style-position: inside;
+        padding: 10px;
+      }
+
+      li {
+        margin: 10px 0;
+      }
+      .pose-display {
+        margin: 20px 0;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .pose-image {
+        max-width: 300px;
+        height: auto;
+        margin: 20px auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .pose-image:hover {
+        transform: scale(1.05);
+      }
+
+      .mood-entry {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        margin: 5px 0;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+      }
+
+      .mood-entry:hover {
+        transform: translateX(5px);
+      }
+
+      .mood-date {
+        flex: 1;
+        font-weight: 500;
+      }
+
+      .mood-emoji-display {
+        font-size: 1.5rem;
+        margin-left: 10px;
+      }
+
+      #mood-history {
+        margin-top: 20px;
+        padding: 10px;
+        background: rgba(248, 249, 250, 0.9);
+        border-radius: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      #mood-history h3 {
+        margin-bottom: 15px;
+        color: #2c3e50;
+        border-bottom: 2px solid rgba(44, 62, 80, 0.1);
+        padding-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Mental Health Resources</h1>
+      <p>Your journey to wellness starts here</p>
+    </header>
+
+    <div class="container">
+      <div class="features-grid">
+        <div class="feature-card">
+          <h2>Daily Mood Tracker</h2>
+          <div class="mood-emojis">
+            <span class="mood-emoji" onclick="trackMood('😊')">😊</span>
+            <span class="mood-emoji" onclick="trackMood('😐')">😐</span>
+            <span class="mood-emoji" onclick="trackMood('😔')">😔</span>
+            <span class="mood-emoji" onclick="trackMood('😣')">😣</span>
+          </div>
+          <div id="mood-history"></div>
+        </div>
+
+        <div class="feature-card">
+          <h2>Guided Meditation</h2>
+          <div class="meditation-player">
+            <div class="timer" id="meditation-timer">05:00</div>
+            <div class="meditation-controls">
+              <button onclick="startMeditation()">Start Meditation</button>
+              <button onclick="pauseMeditation()">Pause</button>
+              <button onclick="resetMeditation()">Reset</button>
+            </div>
+            <p id="meditation-status">Choose a duration and press Start</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card surya-namaskar">
+        <h2>Surya Namaskar Guide</h2>
+        <div class="pose-display">
+          <div class="pose-name" id="pose-name">Ready to Begin</div>
+          <img
+            id="pose-image"
+            src="assets/pose1.jpg"
+            alt="Surya Namaskar Pose"
+            class="pose-image"
+          />
+          <div class="pose-timer" id="pose-timer">5</div>
+          <div id="pose-description"></div>
+        </div>
+        <button onclick="startSuryaNamaskar()">Start Surya Namaskar</button>
+        <button onclick="pauseSuryaNamaskar()">Pause</button>
+        <button onclick="resetSuryaNamaskar()">Reset</button>
+      </div>
+      <div class="resources">
+        <h2>Helpful Resources</h2>
+        <ul id="resources-list">
+          <li>
+            <a href="#" onclick="showResource('anxiety')"
+              >Coping with Anxiety</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="showResource('stress')">Stress Management</a>
+          </li>
+          <li>
+            <a href="#" onclick="showResource('depression')"
+              >Understanding Depression</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="showResource('therapy')">Find a Therapist</a>
+          </li>
+        </ul>
+        <div id="resource-content"></div>
+      </div>
+    </div>
+
+    <script>
+      // Previous code remains the same until here
+      // Mood Tracking
+      let moodHistory = [];
+
+      function trackMood(emoji) {
+        const now = new Date();
+        const date = now.toLocaleDateString();
+        const time = now.toLocaleTimeString();
+        moodHistory.push({ date, time, mood: emoji });
+        updateMoodHistory();
+        saveMoodHistory();
+      }
+
+      function updateMoodHistory() {
+        const history = document.getElementById("mood-history");
+        if (moodHistory.length === 0) {
+          history.innerHTML =
+            "<h3>Recent Moods:</h3><p>No moods tracked yet. Click an emoji to start tracking!</p>";
+          return;
+        }
+
+        const moodEntries = moodHistory
+          .slice(-5)
+          .reverse()
+          .map(
+            (entry) => `
+            <div class="mood-entry">
+                <div class="mood-date">${entry.date} ${entry.time}</div>
+                <div class="mood-emoji-display">${entry.mood}</div>
+            </div>
+        `
+          )
+          .join("");
+
+        history.innerHTML = `
+        <h3>Recent Moods:</h3>
+        ${moodEntries}
+    `;
+      }
+
+      function saveMoodHistory() {
+        localStorage.setItem("moodHistory", JSON.stringify(moodHistory));
+      }
+
+      // Load mood history from localStorage when the page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        const savedMoods = localStorage.getItem("moodHistory");
+        if (savedMoods) {
+          moodHistory = JSON.parse(savedMoods);
+          updateMoodHistory();
+        } else {
+          updateMoodHistory(); // Show empty state
+        }
+      });
+
+      // Meditation Timer
+      let meditationInterval;
+      let timeLeft = 300; // 5 minutes in seconds
+      let isPaused = true;
+
+      function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById("meditation-timer").textContent = `${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      }
+
+      function startMeditation() {
+        if (isPaused) {
+          isPaused = false;
+          document.getElementById("meditation-status").textContent =
+            "Meditation in progress...";
+          meditationInterval = setInterval(() => {
+            if (timeLeft > 0) {
+              timeLeft--;
+              updateTimer();
+            } else {
+              clearInterval(meditationInterval);
+              document.getElementById("meditation-status").textContent =
+                "Meditation completed!";
+              isPaused = true;
+            }
+          }, 1000);
+        }
+      }
+
+      function pauseMeditation() {
+        clearInterval(meditationInterval);
+        isPaused = true;
+        document.getElementById("meditation-status").textContent =
+          "Meditation paused";
+      }
+
+      function resetMeditation() {
+        clearInterval(meditationInterval);
+        timeLeft = 300;
+        isPaused = true;
+        updateTimer();
+        document.getElementById("meditation-status").textContent =
+          "Choose a duration and press Start";
+      }
+
+      // Surya Namaskar
+      const suryaNamaskarPoses = [
+        {
+          name: "Pranamasana (Prayer Pose)",
+          description:
+            "Stand at the edge of your mat, keep your feet together, spine straight, and join your palms in prayer position.",
+          image: "assets/pose1.jpg",
+        },
+        {
+          name: "Hasta Uttanasana (Raised Arms Pose)",
+          description:
+            "Lift your arms up and back, stretching your whole body upwards.",
+          image: "assets/pose2.jpg",
+        },
+        {
+          name: "Pada Hastasana (Hand to Foot Pose)",
+          description:
+            "Bend forward from the waist, keeping your spine straight, and try to touch your feet.",
+          image: "assets/pose3.jpg",
+        },
+        {
+          name: "Ashwa Sanchalanasana (Equestrian Pose)",
+          description:
+            "Push your right leg back, bend your left knee, and look up.",
+          image: "assets/pose4.jpg",
+        },
+        {
+          name: "Parvatasana (Mountain Pose)",
+          description:
+            "Push your left leg back and form an inverted-V with your body.",
+          image: "assets/pose5.jpg",
+        },
+        {
+          name: "Ashtanga Namaskara (Salute with Eight Parts)",
+          description:
+            "Lower your knees, chest, and chin to the floor while keeping your hips up.",
+          image: "assets/pose6.jpg",
+        },
+        {
+          name: "Bhujangasana (Cobra Pose)",
+          description:
+            "Lower your hips, slide forward, and raise your chest in a cobra position.",
+          image: "assets/pose7.jpg",
+        },
+        {
+          name: "Parvatasana (Mountain Pose)",
+          description: "Lift your hips and form an inverted-V shape again.",
+          image: "assets/pose6.jpg",
+        },
+        {
+          name: "Ashwa Sanchalanasana (Equestrian Pose)",
+          description: "Bring your right foot forward between your hands.",
+          image: "assets/pose9.jpg",
+        },
+        {
+          name: "Pada Hastasana (Hand to Foot Pose)",
+          description:
+            "Bring your left foot forward and bend down, keeping your palms on the floor.",
+          image: "assets/pose10.jpg",
+        },
+        {
+          name: "Hasta Uttanasana (Raised Arms Pose)",
+          description: "Raise your arms up and bend backwards.",
+          image: "assets/pose11.jpg",
+        },
+        {
+          name: "Pranamasana (Prayer Pose)",
+          description: "Return to the starting position with palms joined.",
+          image: "assets/pose12.jpg",
+        },
+      ];
+
+      let currentPose = 0;
+      let poseTimeLeft = 5;
+      let suryaNamaskarInterval;
+      let isPausedSurya = true;
+
+      function updatePoseDisplay() {
+        const pose = suryaNamaskarPoses[currentPose];
+        document.getElementById("pose-name").textContent = pose.name;
+        document.getElementById("pose-timer").textContent = poseTimeLeft;
+        document.getElementById("pose-description").textContent =
+          pose.description;
+        document.getElementById("pose-image").src = pose.image;
+        document.getElementById("pose-image").alt = pose.name;
+      }
+
+      function startSuryaNamaskar() {
+        if (isPausedSurya) {
+          isPausedSurya = false;
+          suryaNamaskarInterval = setInterval(() => {
+            if (poseTimeLeft > 0) {
+              poseTimeLeft--;
+              document.getElementById("pose-timer").textContent = poseTimeLeft;
+            } else {
+              currentPose++;
+              if (currentPose >= suryaNamaskarPoses.length) {
+                clearInterval(suryaNamaskarInterval);
+                currentPose = 0;
+                isPausedSurya = true;
+                document.getElementById("pose-name").textContent =
+                  "Sequence Completed!";
+                document.getElementById("pose-timer").textContent = "✓";
+                setTimeout(() => {
+                  resetSuryaNamaskar();
+                }, 2000);
+                return;
+              }
+              poseTimeLeft = 5;
+              updatePoseDisplay();
+            }
+          }, 1000);
+        }
+      }
+
+      function pauseSuryaNamaskar() {
+        clearInterval(suryaNamaskarInterval);
+        isPausedSurya = true;
+      }
+
+      function resetSuryaNamaskar() {
+        clearInterval(suryaNamaskarInterval);
+        currentPose = 0;
+        poseTimeLeft = 5;
+        isPausedSurya = true;
+        updatePoseDisplay();
+      }
+
+      // Resources Content
+      const resources = {
+        anxiety: `
+                <h3>Coping with Anxiety</h3>
+                <p>Learn about anxiety management techniques:</p>
+                <ul>
+                    <li>Deep breathing exercises</li>
+                    <li>Progressive muscle relaxation</li>
+                    <li>Mindfulness practices</li>
+                    <li>Cognitive behavioral techniques</li>
+                </ul>
+            `,
+        stress: `
+                <h3>Stress Management</h3>
+                <p>Effective ways to manage daily stress:</p>
+                <ul>
+                    <li>Time management strategies</li>
+                    <li>Physical exercise</li>
+                    <li>Healthy sleep habits</li>
+                    <li>Boundary setting</li>
+                </ul>`,
+        depression: `
+                <h3>Understanding Depression</h3>
+                <p>Important information about depression:</p>
+                <ul>
+                    <li>Recognizing the symptoms</li>
+                    <li>Treatment options</li>
+                    <li>Self-care strategies</li>
+                    <li>When to seek professional help</li>
+                    <li>Supporting loved ones with depression</li>
+                </ul>
+            `,
+        therapy: `
+                <h3>Find a Therapist</h3>
+                <p>Guidelines for finding the right mental health professional:</p>
+                <ul>
+                    <li>Different types of therapy</li>
+                    <li>What to look for in a therapist</li>
+                    <li>Questions to ask during consultation</li>
+                    <li>Insurance and payment options</li>
+                    <li>Online therapy platforms</li>
+                </ul>
+            `,
+      };
+
+      function showResource(type) {
+        const contentDiv = document.getElementById("resource-content");
+        contentDiv.innerHTML = resources[type];
+
+        // Smooth scroll to content
+        contentDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        // Add active state to selected resource
+        const links = document.querySelectorAll("#resources-list a");
+        links.forEach((link) => {
+          if (link.getAttribute("onclick").includes(type)) {
+            link.style.fontWeight = "bold";
+          } else {
+            link.style.fontWeight = "normal";
+          }
+        });
+      }
+
+      // Initialize the page
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize mood history
+        updateMoodHistory();
+
+        // Initialize meditation timer
+        updateTimer();
+
+        // Initialize Surya Namaskar display
+        updatePoseDisplay();
+
+        // Show default resource
+        showResource("anxiety");
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wellness Goal Tracker</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        /* background: linear-gradient(135deg, #ff7e5f, #feb47b, #6a82fb); */
+        background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+
+      .goal-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        /* background: #6a82fb; */
+        background: linear-gradient(45deg, #ff4081, #ff80ab);
+        transition: all 0.3s ease;
+
+        box-shadow: 0 5px 15px rgba(255, 64, 129, 0.4);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        background: linear-gradient(45deg, #ff80ab, #ff4081);
+        transform: scale(1.05);
+        box-shadow: 0 10px 30px rgba(255, 64, 129, 0.6);
+      }
+
+      .goal-list {
+        margin-top: 20px;
+      }
+
+      .goal-item {
+        background: white;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: #6a82fb;
+        transition: width 0.3s ease;
+      }
+
+      .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+      }
+
+      canvas {
+        background: white;
+        border-radius: 10px;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header" style="color: black">
+        <h1>Wellness Goal Tracker</h1>
+        <p>Set, track, and achieve your wellness goals</p>
+      </div>
+
+      <div class="goal-section">
+        <div class="card">
+          <h2>Set New Goal</h2>
+          <form id="goalForm">
+            <div class="form-group">
+              <label for="goalType">Goal Type</label>
+              <select id="goalType" required>
+                <option value="weight">Weight Loss</option>
+                <!-- <option value="stress">Stress Reduction</option> -->
+                <option value="exercise">Exercise Minutes</option>
+                <option value="sleep">Sleep Hours</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="targetValue">Target Value</label>
+              <input type="number" id="targetValue" required />
+            </div>
+            <div class="form-group">
+              <label for="deadline">Target Date</label>
+              <input type="date" id="deadline" required />
+            </div>
+            <button type="submit">Set Goal</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Track Progress</h2>
+          <form id="progressForm">
+            <div class="form-group">
+              <label for="goalSelect">Select Goal</label>
+              <select id="goalSelect" required></select>
+            </div>
+            <div class="form-group">
+              <label for="currentValue">Current Value</label>
+              <input type="number" id="currentValue" required />
+            </div>
+            <button type="submit">Update Progress</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Your Goals</h2>
+        <div id="goalList" class="goal-list"></div>
+      </div>
+
+      <div class="charts-container">
+        <div class="card">
+          <canvas id="progressChart"></canvas>
+        </div>
+        <div class="card">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+      // Data management class to handle storage
+      class DataManager {
+        constructor() {
+          this.goals = [];
+          this.progressData = [];
+
+          // Try to load data from sessionStorage if available
+          try {
+            const savedGoals = sessionStorage.getItem("goals");
+            const savedProgress = sessionStorage.getItem("progressData");
+
+            if (savedGoals) this.goals = JSON.parse(savedGoals);
+            if (savedProgress) this.progressData = JSON.parse(savedProgress);
+          } catch (e) {
+            console.warn(
+              "Unable to access sessionStorage, falling back to in-memory storage"
+            );
+          }
+        }
+
+        saveData() {
+          try {
+            sessionStorage.setItem("goals", JSON.stringify(this.goals));
+            sessionStorage.setItem(
+              "progressData",
+              JSON.stringify(this.progressData)
+            );
+          } catch (e) {
+            console.warn(
+              "Unable to save to sessionStorage, data will be lost on page refresh"
+            );
+          }
+        }
+
+        addGoal(goal) {
+          this.goals.push(goal);
+          this.saveData();
+        }
+
+        updateProgress(goalId, value) {
+          const goal = this.goals.find((g) => g.id === goalId);
+          if (goal) {
+            goal.current = value;
+            goal.progress = (value / goal.target) * 100;
+
+            this.progressData.push({
+              goalId,
+              value,
+              date: new Date().toISOString(),
+            });
+
+            this.saveData();
+          }
+        }
+
+        deleteGoal(id) {
+          this.goals = this.goals.filter((goal) => goal.id !== id);
+          this.progressData = this.progressData.filter(
+            (data) => data.goalId !== id
+          );
+          this.saveData();
+        }
+      }
+
+      // Initialize data manager
+      const dataManager = new DataManager();
+
+      // DOM Elements
+      const goalForm = document.getElementById("goalForm");
+      const progressForm = document.getElementById("progressForm");
+      const goalList = document.getElementById("goalList");
+      const goalSelect = document.getElementById("goalSelect");
+
+      // Chart instances
+      let progressChart, trendChart;
+
+      // Initialize charts
+      function initializeCharts() {
+        const progressCtx = document
+          .getElementById("progressChart")
+          .getContext("2d");
+        const trendCtx = document.getElementById("trendChart").getContext("2d");
+
+        progressChart = new Chart(progressCtx, {
+          type: "bar",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Current Progress",
+                data: [],
+                backgroundColor: "#6a82fb",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Goal Progress Overview",
+              },
+            },
+          },
+        });
+
+        trendChart = new Chart(trendCtx, {
+          type: "line",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Progress Trend",
+                data: [],
+                borderColor: "#ff7e5f",
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: "Progress Trend Over Time",
+              },
+            },
+          },
+        });
+      }
+
+      // Add new goal
+      goalForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const goal = {
+          id: Date.now(),
+          type: document.getElementById("goalType").value,
+          target: parseFloat(document.getElementById("targetValue").value),
+          deadline: document.getElementById("deadline").value,
+          current: 0,
+          progress: 0,
+        };
+        dataManager.addGoal(goal);
+        updateGoalList();
+        updateCharts();
+        goalForm.reset();
+      });
+
+      // Update progress
+      progressForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const goalId = parseInt(goalSelect.value);
+        const currentValue = parseFloat(
+          document.getElementById("currentValue").value
+        );
+
+        dataManager.updateProgress(goalId, currentValue);
+        updateGoalList();
+        updateCharts();
+        progressForm.reset();
+      });
+
+      // Update goal list display
+      function updateGoalList() {
+        goalList.innerHTML = "";
+        goalSelect.innerHTML = "";
+
+        dataManager.goals.forEach((goal) => {
+          const goalElement = document.createElement("div");
+          goalElement.className = "goal-item";
+          goalElement.innerHTML = `
+                    <div>
+                        <h3>${goal.type}</h3>
+                        <p>Target: ${goal.target} | Current: ${goal.current}</p>
+                        <p>Deadline: ${new Date(
+                          goal.deadline
+                        ).toLocaleDateString()}</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${
+                              goal.progress
+                            }%"></div>
+                        </div>
+                    </div>
+                    <button onclick="deleteGoal(${goal.id})">Delete</button>
+                `;
+          goalList.appendChild(goalElement);
+
+          const option = document.createElement("option");
+          option.value = goal.id;
+          option.textContent = `${goal.type} (Target: ${goal.target})`;
+          goalSelect.appendChild(option);
+        });
+      }
+
+      // Delete goal
+      function deleteGoal(id) {
+        dataManager.deleteGoal(id);
+        updateGoalList();
+        updateCharts();
+      }
+
+      // Update charts
+      function updateCharts() {
+        progressChart.data.labels = dataManager.goals.map((goal) => goal.type);
+        progressChart.data.datasets[0].data = dataManager.goals.map(
+          (goal) => goal.progress
+        );
+        progressChart.update();
+
+        const recentProgress = dataManager.progressData.slice(-10);
+        trendChart.data.labels = recentProgress.map((data) =>
+          new Date(data.date).toLocaleDateString()
+        );
+        trendChart.data.datasets[0].data = recentProgress.map(
+          (data) => data.value
+        );
+        trendChart.update();
+      }
+
+      // Initialize the application
+      initializeCharts();
+      updateGoalList();
+      updateCharts();
+    </script>
+  </body>
+</html>

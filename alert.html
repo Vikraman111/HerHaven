@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panic Button</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(to right, #ff7e5f, #feb47b);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        color: white;
+      }
+
+      h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
+
+      p {
+        font-size: 18px;
+        margin-bottom: 40px;
+        max-width: 600px;
+      }
+
+      .panic-button {
+        padding: 20px 40px;
+        font-size: 24px;
+        color: white;
+        background-color: red;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .panic-button:hover {
+        background-color: darkred;
+      }
+
+      .alert-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-size: 48px;
+        color: white;
+        z-index: 10;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      footer {
+        position: absolute;
+        bottom: 20px;
+        font-size: 14px;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Panic Button</h1>
+    <p>
+      Press the Panic Button below to send an immediate alert for help. This
+      feature triggers an audio alert and a visual warning, ensuring that you
+      get the attention you need in emergencies.
+    </p>
+
+    <div class="alert-screen" id="alertScreen">EMERGENCY!</div>
+    <button class="panic-button" id="panicButton">Panic Button</button>
+
+    <audio id="alertSound" src="alert-sound.mp3"></audio>
+
+    <script>
+      const panicButton = document.getElementById("panicButton");
+      const alertScreen = document.getElementById("alertScreen");
+      const alertSound = document.getElementById("alertSound");
+
+      panicButton.addEventListener("click", () => {
+        alertSound.play();
+        alertScreen.style.display = "flex";
+        let isFlashing = true;
+        const flashInterval = setInterval(() => {
+          alertScreen.style.opacity = isFlashing ? "1" : "0.8";
+          isFlashing = !isFlashing;
+        }, 500);
+        setTimeout(() => {
+          clearInterval(flashInterval);
+          alertScreen.style.display = "none";
+          alertSound.pause();
+          alertSound.currentTime = 0;
+        }, 5000);
+      });
+    </script>
+  </body>
+</html>

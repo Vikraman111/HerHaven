@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutrition Planning Chatbot</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        /* background: #f0f2f5; */
+
+        background: linear-gradient(135deg, #e0eafc 0%, #b1c7e5 100%);
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .chat-header {
+        background: #4caf50;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .chat-messages {
+        height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .message.user {
+        flex-direction: row-reverse;
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 15px;
+        margin: 0 10px;
+      }
+
+      .bot .message-content {
+        background: #f0f2f5;
+      }
+
+      .user .message-content {
+        background: #4caf50;
+        color: white;
+      }
+
+      .message-content strong {
+        font-weight: bold;
+      }
+
+      .message-content em {
+        font-style: italic;
+      }
+
+      .message-content ul,
+      .message-content ol {
+        margin-left: 20px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+      }
+
+      .message-content li {
+        margin-bottom: 4px;
+      }
+
+      .message-content p {
+        margin-bottom: 8px;
+      }
+
+      .message-content h1,
+      .message-content h2,
+      .message-content h3 {
+        margin-top: 12px;
+        margin-bottom: 8px;
+      }
+
+      .avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+
+      .bot .avatar {
+        background: #4caf50;
+        color: white;
+      }
+
+      .user .avatar {
+        background: #2e7d32;
+        color: white;
+      }
+
+      .input-area {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+      }
+
+      #userInput {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        outline: none;
+        font-size: 16px;
+      }
+
+      #sendButton {
+        padding: 12px 24px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+      }
+
+      #sendButton:hover {
+        background: #45a049;
+      }
+
+      .loading {
+        display: inline-block;
+        margin-left: 10px;
+      }
+
+      .loading span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #4caf50;
+        border-radius: 50%;
+        margin: 0 2px;
+        animation: loading 1s infinite;
+      }
+
+      .loading span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .loading span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes loading {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="chat-header">
+        <h1>Nutrition Planning Assistant</h1>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <!-- Messages will be added here -->
+      </div>
+      <div class="input-area">
+        <input
+          type="text"
+          id="userInput"
+          placeholder="Ask about nutrition plans..."
+        />
+        <button id="sendButton">Send</button>
+      </div>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import { GoogleGenerativeAI } from "@google/generative-ai";
+
+      const API_KEY = "AIzaSyBb7ivehc3naFWbhu7F6cGrQnNqLl-pHzo";
+      const genAI = new GoogleGenerativeAI(API_KEY);
+
+      const chatMessages = document.getElementById("chatMessages");
+      const userInput = document.getElementById("userInput");
+      const sendButton = document.getElementById("sendButton");
+
+      const initialContext = `You are a helpful nutrition planning assistant. Your goal is to provide personalized nutrition advice and meal plans based on users' needs, preferences, and health goals. Be friendly, professional, and always prioritize health and safety in your recommendations.
+
+        When providing nutrition advice:
+        1. Ask about dietary restrictions and allergies
+        2. Consider health goals (weight loss, muscle gain, maintenance)
+        3. Suggest balanced meals with proper portions
+        4. Include variety in food choices
+        5. Explain the nutritional benefits of recommended foods
+        6. Encourage sustainable eating habits
+
+        Format your responses using markdown:
+        - Use ** for bold text
+        - Use * for italic text
+        - Use - or * for bullet points
+        - Use numbers for ordered lists
+        - Use # for headers
+
+        Always remind users to consult healthcare professionals before making significant dietary changes.`;
+
+      let conversationHistory = [
+        {
+          role: "assistant",
+          content:
+            "**Hello!** I'm your nutrition planning assistant. I can help you create personalized meal plans and provide nutrition advice. To get started, could you tell me about your health goals and any dietary restrictions you may have?",
+        },
+      ];
+
+      function markdownToHtml(text) {
+        text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+        text = text.replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+        text = text.replace(/###\s*(.*?)\n/g, "<h3>$1</h3>");
+
+        text = text.replace(/##\s*(.*?)\n/g, "<h2>$1</h2>");
+
+        text = text.replace(/#\s*(.*?)\n/g, "<h1>$1</h1>");
+
+        text = text.replace(/^\s*[-*]\s*(.*?)$/gm, "<li>$1</li>");
+        text = text.replace(/(<li>.*?<\/li>\n?)+/g, "<ul>$&</ul>");
+
+        text = text.replace(/^\s*\d+\.\s*(.*?)$/gm, "<li>$1</li>");
+        text = text.replace(/(<li>.*?<\/li>\n?)+/g, "<ol>$&</ol>");
+
+        text = text.replace(/\n\n/g, "</p><p>");
+        text = text.replace(/^(.+?)$/gm, "<p>$1</p>");
+
+        text = text.replace(/<\/p><p><p>/g, "<p>");
+        text = text.replace(/<\/p><\/p>/g, "</p>");
+
+        return text;
+      }
+
+      function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${isUser ? "user" : "bot"}`;
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = isUser ? "U" : "N";
+
+        const messageContent = document.createElement("div");
+        messageContent.className = "message-content";
+
+        if (isUser) {
+          messageContent.textContent = content;
+        } else {
+          messageContent.innerHTML = markdownToHtml(content);
+        }
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(messageContent);
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function showLoading() {
+        const loadingDiv = document.createElement("div");
+        loadingDiv.className = "message bot";
+        loadingDiv.innerHTML = `
+                <div class="avatar">N</div>
+                <div class="message-content">
+                    <div class="loading">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return loadingDiv;
+      }
+
+      async function generateResponse(userMessage) {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+        let prompt = initialContext + "\n\nConversation history:\n";
+        conversationHistory.forEach((msg) => {
+          prompt += `${msg.role}: ${msg.content}\n`;
+        });
+        prompt += `user: ${userMessage}\n`;
+
+        try {
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          const text = response.text();
+          return text;
+        } catch (error) {
+          console.error("Error generating response:", error);
+          return "I apologize, but I'm having trouble generating a response right now. Please try again.";
+        }
+      }
+
+      async function handleUserInput() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        userInput.value = "";
+
+        addMessage(message, true);
+        conversationHistory.push({ role: "user", content: message });
+
+        const loadingDiv = showLoading();
+
+        const response = await generateResponse(message);
+        chatMessages.removeChild(loadingDiv);
+        addMessage(response);
+        conversationHistory.push({ role: "assistant", content: response });
+      }
+
+      sendButton.addEventListener("click", handleUserInput);
+      userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleUserInput();
+      });
+
+      addMessage(conversationHistory[0].content);
+    </script>
+  </body>
+</html>
